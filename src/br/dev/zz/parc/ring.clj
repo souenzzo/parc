@@ -2,9 +2,12 @@
   (:refer-clojure :exclude [for])
   (:require [br.dev.zz.parc :as parc]
             [clojure.java.io :as io]
-            [clojure.spec.alpha :as s])
-  (:import (java.nio.charset StandardCharsets)
-           (java.util Base64)))
+            [clojure.spec.alpha :as s]))
+
+(s/def ::ring-request
+  (s/keys :req-un [::server-name]))
+
+(s/def ::server-name string?)
 
 (defn for
   [entries {:keys [server-name]}]
@@ -21,23 +24,26 @@
 
 (def *std-netrc-file
   (delay (or (System/getenv "NETRC")
-           (io/file (System/getProperty "user.home")
-             ".netrc"))))
+           (let [f (io/file (System/getProperty "user.home")
+                     ".netrc")]
+             (when (.exists f)
+               f)))))
 
 (defn with
   ([request] (with @*std-netrc-file
                request))
-  ([netrc request]
-   (let [{:keys [login password]} (for (parc/parse netrc) request)]
-     (cond-> request
-       (and login password)
+  ([netrc {:keys [server-name]
+           :as   ring-request}]
+   (let [parc (parc/find netrc server-name)]
+     (cond-> ring-request
+       (and
+         (contains? parc :login)
+         (contains? parc :password))
        (assoc-in [:headers "Authorization"]
-         (str "Basic "
-           (.encodeToString (Base64/getEncoder)
-             (.getBytes (str login ":" password)
-               StandardCharsets/UTF_8))))))))
+         (parc/authorization-for parc))))))
 
 (s/fdef for
-  :args (s/cat :netrc (s/? any?)
-          :ring-request map?)
-  :ret (s/? map?))
+  :args (s/or :default (s/cat :ring-request ::ring-request)
+          :explicit (s/cat :netrc any?
+                      :ring-request ::ring-request))
+  :ret ::ring-request)

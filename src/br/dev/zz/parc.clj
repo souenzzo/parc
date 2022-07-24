@@ -1,7 +1,10 @@
 (ns br.dev.zz.parc
+  (:refer-clojure :exclude [find])
   (:require [clojure.java.io :as io]
-            [clojure.string :as string]
-            [clojure.spec.alpha :as s]))
+            [clojure.spec.alpha :as s]
+            [clojure.string :as string])
+  (:import (java.nio.charset StandardCharsets)
+           (java.util Base64)))
 
 (defn parse-netrc-lines
   [rf]
@@ -50,3 +53,24 @@
 (s/fdef parse
   :args (s/cat :netrc any?)
   :ret (s/coll-of map?))
+
+(defn ->netrc
+  [x]
+  (cond
+    (coll? x) x
+    :else (parse x)))
+
+(defn authorization-for
+  [{:keys [login password]}]
+  (str "Basic "
+    (.encodeToString (Base64/getEncoder)
+      (.getBytes (str login ":" password)
+        StandardCharsets/UTF_8))))
+
+(defn find
+  [x machine]
+  (let [vs (->netrc x)]
+    (or
+      (first (filter (comp #{machine} :machine)
+               vs))
+      (first (filter :default vs)))))
