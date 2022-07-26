@@ -2,15 +2,20 @@
 
 > `.netrc` support for clojure
 
-This library implements a parser to turn `.netrc` files into idiomatic clojure datastructures.
+This library implements a parser to turn `.netrc` files into idiomatic clojure data structures.
 
 It also bundles some utilities functions, like ring utilities.
 
-## the problem
+## Background
+
+- [What is ring](https://github.com/ring-clojure/ring#ring)
+- [What is netrc](https://everything.curl.dev/usingcurl/netrc)
+
+## The problem
 
 Many providers, like AWS, create custom `credentials` files, custom formats, etc, to store its credentials.
 
-These credentials are all stored in custom files at our home folder.
+These credentials are all stored at our home folder.
 
 This is a problem to manage access, do backups, etc.
 
@@ -20,12 +25,15 @@ One standard credentials description format, many implementations.
 
 The `.netrc` file tries to addess this issue in a unix way.
 
-A few, but relevant clients, like `curl`, `GNU Inetutils`, `heroku-cli` support it.
+A few, but relevant, clients like `curl`, `GNU Inetutils`, `heroku-cli` support it.
 
 Using `netrc` file, you can specify credentials for multiple domains, and any client can use it with any transport
-protocol.
+protocol (http, ftp, etc...).
 
-## usage
+You can also encrypt your `.netrc` file with `gnupg`, avoiding writing credentials in plaintext 
+(not implemented, yet). 
+
+## Usage
 
 Add to your `deps.edn` file:
 
@@ -58,6 +66,23 @@ You can also specify a custom `netrc` file if you want to.
 (parc.ring/with (io/file "custom.netrc") {:server-name "example.com"})
 => {:server-name "example.com",
     :headers     {"Authorization" "Basic ZGFuaWVsOnF3ZXJ0eQ=="}}
+```
+
+A custom `netrc` file should look like this:
+
+```netrc
+machine api.example.com
+  login my-username
+  password my-password
+```
+
+You can also parse the `netrc` file. 
+
+```clojure
+(parc/parse (io/file "my-netrc"))
+=> [{:machine  "api.example.com"
+     :login    "my-username"
+     :password "my-password"}]
 ```
 
 ## Usage with hato
