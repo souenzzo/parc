@@ -1,13 +1,12 @@
 (ns br.dev.zz.parc-dev
-  (:require [clojure.test :refer [deftest]]
-            [io.pedestal.http :as http]
-            [clj-http.client :as clj-http]
-            [hato.client :as hato]
-            [br.dev.zz.parc :as parc]
+  (:require [br.dev.zz.parc :as parc]
             [br.dev.zz.parc.ring :as parc.ring]
+            [clj-http.client :as clj-http]
             [clj-http.lite.client :as chl]
-            [io.pedestal.interceptor :as interceptor]
-            [clojure.string :as string])
+            [clojure.string :as string]
+            [hato.client :as hato]
+            [io.pedestal.http.jetty :as jetty]
+            [io.pedestal.connector :as conn])
   (:import (java.util Base64)))
 
 (defonce *server
@@ -17,28 +16,26 @@
   []
   (swap! *server
     (fn [st]
-      (some-> st http/stop)
-      (-> {::http/port  8080
-           ::http/interceptors
-           [(interceptor/interceptor
-              {:name  ::echo
-               :enter (fn [{:keys [request]
-                            :as   ctx}]
-                        (let [auth (some-> request
-                                     :headers
-                                     (get "authorization")
-                                     (string/split #"\s" 2)
-                                     second
-                                     (->> str
-                                       (.decode (Base64/getDecoder)))
-                                     slurp)]
-                          (assoc ctx
-                            :response {:body   auth
-                                       :status 200})))})]
-           ::http/type  :jetty
-           ::http/join? false}
-        http/create-server
-        http/start))))
+      (some-> st conn/stop!)
+      (-> 8080
+        conn/default-connector-map
+        (conn/with-interceptor
+          {:name  ::echo
+           :enter (fn [{:keys [request]
+                        :as   ctx}]
+                    (let [auth (some-> request
+                                 :headers
+                                 (get "authorization")
+                                 (string/split #"\s" 2)
+                                 second
+                                 (->> str
+                                   (.decode (Base64/getDecoder)))
+                                 slurp)]
+                      (assoc ctx
+                        :response {:body   auth
+                                   :status 200})))})
+        (jetty/create-connector nil)
+        conn/start!))))
 
 (defn req!
   []

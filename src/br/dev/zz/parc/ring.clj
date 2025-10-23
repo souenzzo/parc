@@ -4,10 +4,10 @@
             [clojure.java.io :as io]
             [clojure.spec.alpha :as s]))
 
+(s/def ::server-name string?)
+
 (s/def ::ring-request
   (s/keys :req-un [::server-name]))
-
-(s/def ::server-name string?)
 
 (defn for
   [entries {:keys [server-name]}]
@@ -20,7 +20,6 @@
   :args (s/cat :entries (s/coll-of map?)
           :ring-request map?)
   :ret (s/? map?))
-
 
 (def *std-netrc-file
   (delay (or (System/getenv "NETRC")
@@ -42,7 +41,7 @@
        (assoc-in [:headers "Authorization"]
          (parc/authorization-for parc))))))
 
-(s/fdef for
+(s/fdef with
   :args (s/or :default (s/cat :ring-request ::ring-request)
           :explicit (s/cat :netrc any?
                       :ring-request ::ring-request))

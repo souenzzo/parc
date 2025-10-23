@@ -58,7 +58,7 @@
   [x]
   (cond
     (coll? x) x
-    :else (parse x)))
+    :else (some-> x parse)))
 
 (defn authorization-for
   [{:keys [login password]}]

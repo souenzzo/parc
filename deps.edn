@@ -1,11 +1,16 @@
 {:paths   ["src"]
- :aliases {:dev {:extra-paths ["dev" "test"]
-                 :extra-deps  {clj-http/clj-http             {:mvn/version "3.12.3"}
-                               hato/hato                     {:mvn/version "0.8.2"}
-                               io.pedestal/pedestal.jetty    {:mvn/version "0.5.10"}
-                               io.pedestal/pedestal.service  {:mvn/version "0.5.10"}
-                               org.clj-commons/clj-http-lite {:mvn/version "0.4.392"}
-                               org.clojure/clojure           {:mvn/version "1.11.1"}
-                               org.clojure/core.async        {:mvn/version "1.5.648"}
-                               org.clojure/test.check        {:mvn/version "1.1.1"}
-                               org.slf4j/slf4j-simple        {:mvn/version "2.0.0-alpha7"}}}}}
+ :aliases {:dev       {:extra-paths ["dev" "test"]
+                       :extra-deps  {clj-http/clj-http             {:mvn/version "3.13.1"}
+                                     hato/hato                     {:mvn/version "1.0.0"}
+                                     io.github.clojure/tools.build {:mvn/version "0.10.10"}
+                                     io.pedestal/pedestal.jetty    {:mvn/version "0.8.0"}
+                                     io.pedestal/pedestal.service  {:mvn/version "0.8.0"}
+                                     org.clj-commons/clj-http-lite {:mvn/version "1.0.13"}
+                                     org.clojure/clojure           {:mvn/version "1.12.3"}
+                                     org.clojure/core.async        {:mvn/version "1.8.741"}
+                                     org.clojure/test.check        {:mvn/version "1.1.1"}
+                                     org.slf4j/slf4j-simple        {:mvn/version "2.0.17"}
+                                     slipset/deps-deploy           {:mvn/version "0.2.2"
+                                                                    :exclusions  [org.slf4j/slf4j-nop]}}}
+           :clj-kondo {:extra-deps {clj-kondo/clj-kondo {:mvn/version "2025.10.23"}}
+                       :main-opts  ["-m" "clj-kondo.main" "--lint" "src"]}}}
