@@ -38,8 +38,7 @@ You can also encrypt your `.netrc` file with `gnupg`, avoiding writing credentia
 Add to your `deps.edn` file:
 
 ```clojure
-br.dev.zz/parc {:git/url "https://github.com/souenzzo/parc"
-                :git/sha "..."}
+br.dev.zz/parc {:mvn/version "1.0.0"}
 ```
 
 Default namespaces for the examples
