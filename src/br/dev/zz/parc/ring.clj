@@ -42,7 +42,7 @@
        (assoc-in [:headers "Authorization"]
          (parc/authorization-for parc))))))
 
-(s/fdef for
+(s/fdef with
   :args (s/or :default (s/cat :ring-request ::ring-request)
           :explicit (s/cat :netrc any?
                       :ring-request ::ring-request))
